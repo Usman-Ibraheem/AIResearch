@@ -1,285 +1,2483 @@
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Candidate Assessment Tool</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <style>
-        [x-cloak] { display: none !important; }
-        /* Custom scrollbar for chat */
-        .chat-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-        .chat-scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-        .chat-scrollbar::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 3px;
-        }
-        .chat-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Research Paper Analyzer</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+
+<style>
+
+:root {
+  --primary-color: #00A3FF;
+  --secondary-color: #001B48;
+  --accent-color: #00FFD1;
+  --background-color: #080B1A;
+  --card-bg: rgba(13, 17, 33, 0.95);
+  --text-primary: #FFFFFF;
+  --text-secondary: #94A3B8;
+  --border-color: rgba(0, 163, 255, 0.1);
+  --success-color: #10B981;
+  --error-color: #EF4444;
+}
+
+.language-btn.active {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.language-selector {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.language-btn {
+  padding: 0.5rem 1rem;
+  margin: 0 0.25rem;
+}
+
+.language-btn i {
+  margin-right: 0.5rem;
+}
+
+/* Neural Network Background Animation */
+body {
+  background: var(--background-color);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  position: relative;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-image:
+    linear-gradient(to right, rgba(0, 163, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 163, 255, 0.1) 1px, transparent 1px);
+  background-size: 30px 30px;
+  animation: gridMove 20s linear infinite;
+  z-index: -1;
+}
+
+/* Enhanced Results Section Styling */
+.results-section {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  margin-top: 2rem;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 163, 255, 0.1);
+  backdrop-filter: blur(20px);
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.results-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent, rgba(0, 163, 255, 0.1), transparent);
+  animation: shimmer 2s infinite;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Enhanced Tab Navigation */
+.results-section .nav-tabs {
+  background: rgba(13, 17, 33, 0.8);
+  border-bottom: 1px solid rgba(0, 163, 255, 0.2);
+  padding: 0.5rem 1rem;
+  gap: 0.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.results-section .nav-tabs::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+  animation: glow 2s infinite;
+}
+
+@keyframes glow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.results-section .nav-link {
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  padding: 1rem 1.5rem;
+  position: relative;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.results-section .nav-link::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent, rgba(0, 163, 255, 0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.results-section .nav-link:hover::before {
+  transform: translateX(100%);
+}
+
+.results-section .nav-link.active {
+  color: var(--accent-color);
+  background: rgba(0, 163, 255, 0.1);
+}
+
+/* Enhanced Table Styling */
+.table-container {
+  background: rgba(13, 17, 33, 0.8);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.table {
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.table th {
+  background: rgba(0, 163, 255, 0.15);
+  color: var(--accent-color);
+  font-weight: 600;
+  padding: 1.25rem 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.table th::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+  animation: shimmerBorder 2s infinite;
+}
+
+@keyframes shimmerBorder {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.table td {
+  background: rgba(13, 17, 33, 0.5);
+  border: none;
+  padding: 1rem;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.table tr:hover td {
+  background: rgba(0, 163, 255, 0.1);
+}
+
+/* Enhanced Chat Section */
+.chat-section {
+  background: var(--card-bg);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  position: relative;
+}
+
+/* Chat Message Styling */
+.chat-message {
+  padding: 1.2rem;
+  border-radius: 12px;
+  max-width: 75%;
+  margin-bottom: 1rem;
+  position: relative;
+  animation: messageSlideIn 0.3s ease forwards;
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(10px);
+}
+
+/* User Message Styling */
+.user-message {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: var(--text-primary);
+  margin-left: auto;
+  box-shadow: 0 4px 15px rgba(0, 163, 255, 0.1);
+}
+
+/* Assistant Message Styling */
+.assistant-message {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  margin-right: auto;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Assistant Typing Indicator */
+.assistant-typing {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  border-top-left-radius: 0;
+  margin-right: auto;
+  padding: 1.2rem;
+  max-width: 75%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  animation: messageSlideIn 0.3s ease forwards;
+  color: var(--text-primary);
+  backdrop-filter: blur(10px);
+}
+
+/* Typing Indicator Animation */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0;
+}
+
+.typing-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  opacity: 0.7;
+  animation: typingAnimation 1.4s infinite;
+}
+
+/* Chat Container */
+#chat-messages {
+  height: 400px;
+  overflow-y: auto;
+  padding: 1.5rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-color) var(--card-bg);
+}
+
+/* Chat Input Area */
+.chat-input-container {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.2rem;
+  position: relative;
+}
+
+.chat-input-group {
+  display: flex;
+  gap: 1rem;
+}
+
+#chat-input {
+  background: rgba(13, 17, 33, 0.8);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  transition: all 0.3s ease;
+}
+
+#chat-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(0, 163, 255, 0.1);
+}
+
+/* Animations */
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes typingAnimation {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Scrollbar Styling */
+#chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+#chat-messages::-webkit-scrollbar-track {
+  background: var(--card-bg);
+}
+
+#chat-messages::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 3px;
+}
+
+#chat-messages::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-color);
+}
+
+/* Enhanced Loading Animation */
+.loading {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.loading::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(0, 163, 255, 0.1),
+    transparent
+  );
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spinner-border {
+  color: var(--accent-color) !important;
+  width: 3rem;
+  height: 3rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Update placeholder colors for dark theme */
+.form-control::placeholder {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Visualization cards grid layout */
+.visualization-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 500px), 1fr));
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+.visualization-card {
+  height: 100%;
+  min-height: 300px;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-color) rgba(13, 17, 33, 0.5);
+}
+
+.visualization-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent, rgba(0, 163, 255, 0.05), transparent);
+  animation: shimmer 2s infinite;
+  pointer-events: none;
+}
+
+.visualization-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 32px rgba(0, 163, 255, 0.2);
+}
+
+/* Global Animation Keyframes */
+@keyframes gridMove {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(30px); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .results-section {
+    margin-top: 1rem;
+  }
+
+  .nav-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 0.5rem;
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+
+  .chat-message {
+    max-width: 85%;
+  }
+}
+
+
+@keyframes gridMove {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(30px); }
+}
+
+/* Floating Particles */
+.particle {
+  position: fixed;
+  width: 3px;
+  height: 3px;
+  background: var(--accent-color);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.5;
+  z-index: -1;
+}
+
+/* Modern Card Design */
+.card, .results-section, .upload-area {
+  background: var(--card-bg);
+  border: 1px solid rgba(0, 163, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 163, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.card:hover, .results-section:hover {
+  border-color: rgba(0, 163, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 163, 255, 0.2);
+}
+
+/* AI-inspired Button */
+.btn-primary {
+  background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+  border: none;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: 0.5s;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+/* Smart Form Inputs */
+.form-control {
+  background: rgba(13, 17, 33, 0.8);
+  border: 1px solid rgba(0, 163, 255, 0.2);
+  border-radius: 8px;
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  background: rgba(13, 17, 33, 0.9);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 15px rgba(0, 163, 255, 0.2);
+}
+
+/* Upload Area Enhancement */
+.upload-area {
+  border: 2px dashed rgba(0, 163, 255, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.upload-area::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg,
+    transparent 0%,
+    rgba(0, 163, 255, 0.05) 50%,
+    transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.upload-area:hover::before {
+  transform: translateX(100%);
+}
+
+/* Navigation Bar */
+.navbar {
+  background: rgba(8, 11, 26, 0.95) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 163, 255, 0.1);
+}
+
+/* Navbar collapse fix */
+.navbar-collapse {
+  transition: height 0.3s ease;
+}
+
+.navbar-collapse.collapsing {
+  height: 0;
+}
+.nav-link {
+  color: var(--text-primary) !important;
+  position: relative;
+  padding: 0.5rem 1rem;
+  transition: all 0.3s ease;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: var(--accent-color);
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Processing Animation */
+.loading {
+  background: rgba(13, 17, 33, 0.95);
+  border: 1px solid rgba(0, 163, 255, 0.2);
+  border-radius: 12px;
+}
+
+.spinner-border {
+  color: var(--accent-color) !important;
+}
+
+
+/* Particle Animation */
+@keyframes float {
+  0% {
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    transform: translateY(-20px) translateX(10px);
+  }
+  100% {
+    transform: translateY(0) translateX(0);
+  }
+}
+
+.particle {
+  animation: float linear infinite;
+}
+
+/* Enhanced Search Tab Styling */
+.search-section {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 163, 255, 0.1);
+  backdrop-filter: blur(20px);
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.search-section:hover {
+  border-color: rgba(0, 163, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 163, 255, 0.2);
+}
+
+.search-section .form-label {
+  color: var(--text-primary);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-section .form-control {
+  background: rgba(13, 17, 33, 0.8);
+  border: 1px solid rgba(0, 163, 255, 0.2);
+  border-radius: 8px;
+  color: var(--text-primary);
+  padding: 0.75rem 1rem;
+  transition: all 0.3s ease;
+}
+
+.search-section .form-control:focus {
+  background: rgba(13, 17, 33, 0.9);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 15px rgba(0, 163, 255, 0.2);
+}
+.upload-section {
+  margin-bottom: 2rem !important; /* Reduce bottom margin */
+}
+
+/* Ensure consistent spacing across tabs */
+.search-section {
+  margin-bottom: 2rem !important;
+}
+/* Enhanced Search Tab Styling */
+.upload-section {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 163, 255, 0.1);
+  backdrop-filter: blur(20px);
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+}
+
+.upload-section:hover {
+  border-color: rgba(0, 163, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 163, 255, 0.2);
+}
+
+.upload-section .form-label {
+  color: var(--text-primary);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.upload-section .form-control {
+  background: rgba(13, 17, 33, 0.8);
+  border: 1px solid rgba(0, 163, 255, 0.2);
+  border-radius: 8px;
+  color: var(--text-primary);
+  padding: 0.75rem 1rem;
+  transition: all 0.3s ease;
+}
+
+.upload-section .form-control:focus {
+  background: rgba(13, 17, 33, 0.9);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 15px rgba(0, 163, 255, 0.2);
+}
+
+
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .search-section,
+  .results-section,
+  .upload-section {
+    padding: 1rem;
+  }
+
+  .visualization-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .nav-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+/* Update header gradient */
+.main-header .navbar,
+.app-header,
+.footer-top {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)) !important;
+}
+
+
+/* Link colors */
+a {
+  color: var(--link-color);
+}
+
+a:hover {
+  color: #422D4F; /* Darker purple */
+}
+
+
+/* Progress bar colors */
+.progress-bar {
+  background-color: var(--neutral-accent);
+}
+
+.progress {
+  background-color: var(--primary-color);
+}
+
+/* Alert styling */
+.alert-success {
+  background-color: rgba(45, 90, 69, 0.1);
+  border-color: var(--success-color);
+  color: var(--success-color);
+}
+
+.alert-danger {
+  background-color: rgba(139, 58, 58, 0.1);
+  border-color: var(--error-color);
+  color: var(--error-color);
+}
+
+/* Toast notifications */
+.toast-notification.success {
+  border-left-color: var(--success-color);
+}
+
+.toast-notification.error {
+  border-left-color: var(--error-color);
+}
+
+/* Chat section styling */
+.user-message {
+  background: var(--primary-color);
+}
+
+.assistant-message {
+
+  border-color: var(--border-color);
+}
+
+/* Visualization card styling */
+.visualization-card {
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+}
+
+/* Footer link hover effects */
+.footer-links a:hover {
+  color: var(--highlight-color) !important;
+}
+
+/* Social media icons */
+.social-links a:hover {
+  background: var(--highlight-color);
+  color: var(--primary-color);
+}
+
+
+
+.container {
+max-width: 1600px;
+padding: 2rem;
+padding-bottom: 0;
+}
+
+/* Header Styling */
+.app-header {
+text-align: center;
+margin-bottom: 3rem;
+padding: 2rem 0;
+background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+color: white;
+border-radius: 1rem;
+box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.app-header h1 {
+font-size: 2.5rem;
+font-weight: 700;
+margin: 0;
+}
+/* Adjust the margin and padding of the upload section */
+.upload-section {
+    margin-bottom: 0.5rem; /* Adjust this value as needed */
+    padding: 1rem; /* Reduce padding if necessary */
+}
+
+/* Ensure consistent spacing */
+.tab-content > .tab-pane {
+  padding: 1rem;
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 768px) {
+  .visualization-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .visualization-card {
+    min-height: 250px;
+  }
+
+  .navbar-collapse {
+    background: var(--background-color);
+    padding: 1rem;
+    border-radius: 0 0 8px 8px;
+  }
+}
+/* Upload Section */
+.upload-area {
+  border: 2px dashed var(--border-color);
+  border-radius: 1rem;
+  padding: 2rem;
+  text-align: center;
+  position: relative;
+  transition: all 0.3s ease;
+  background-color: var(--background-color);
+  cursor: pointer;
+}
+
+.upload-area:hover, .upload-area.dragover {
+  border-color: var(--primary-color);
+  background-color: rgba(37, 99, 235, 0.05);
+}
+
+.file-input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload-content {
+  pointer-events: none;
+}
+
+.upload-icon {
+  font-size: 4rem;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.upload-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.upload-text {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.browse-btn {
+  background-color: white;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.browse-btn:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.upload-hint {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  margin-top: 1rem;
+  margin-bottom: 0;
+}
+
+/* New Alert Styles */
+.upload-alert {
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.upload-alert.success {
+  background-color: #D1FAE5;
+  color: #065F46;
+  border: 1px solid #34D399;
+}
+
+.upload-alert.error {
+  background-color: #FEE2E2;
+  color: #991B1B;
+  border: 1px solid #F87171;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.form-control {
+border: 2px solid var(--border-color);
+border-radius: 0.5rem;
+padding: 0.75rem 1rem;
+transition: all 0.3s ease;
+}
+
+.form-control:focus {
+border-color: var(--primary-color);
+box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.btn-primary {
+background-color: var(--primary-color);
+border: none;
+padding: 0.75rem 1.5rem;
+border-radius: 0.5rem;
+font-weight: 600;
+transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+background-color: var(--secondary-color);
+transform: translateY(-1px);
+}
+
+
+
+
+
+
+
+
+
+.typing-dot:nth-child(2) {
+animation-delay: 0.2s;
+}
+
+.typing-dot:nth-child(3) {
+animation-delay: 0.4s;
+}
+
+@keyframes typingAnimation {
+0%, 100% { transform: translateY(0); }
+50% { transform: translateY(-8px); }
+}
+
+@keyframes messageSlideIn {
+from {
+opacity: 0;
+transform: translateY(20px);
+}
+to {
+opacity: 1;
+transform: translateY(0);
+}
+}
+
+.chat-controls {
+position: absolute;
+right: 1rem;
+top: -2.5rem; /* Position above the input area */
+display: flex;
+gap: 0.5rem;
+background: white;
+padding: 0.5rem;
+border-radius: 0.5rem;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chat-control-btn {
+background: none;
+border: none;
+color: var(--text-secondary);
+cursor: pointer;
+padding: 0.5rem;
+border-radius: 0.25rem;
+transition: all 0.3s ease;
+}
+
+.chat-control-btn:hover {
+color: var(--primary-color);
+background: #f8f9fa;
+}
+
+.typing-indicator span {
+display: inline-block;
+width: 8px;
+height: 8px;
+background-color: #90cdf4;
+border-radius: 50%;
+margin: 0 2px;
+animation: typing 1s infinite;
+}
+
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing {
+0%, 100% { transform: translateY(0); }
+50% { transform: translateY(-5px); }
+}
+
+
+/* Alert Styling */
+.alert {
+border-radius: 0.5rem;
+padding: 1rem 1.5rem;
+margin-bottom: 1.5rem;
+border: none;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+.container {
+padding: 1rem;
+}
+
+.visualization-grid {
+grid-template-columns: 1fr;
+}
+
+.chat-message {
+max-width: 90%;
+}
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+width: 8px;
+}
+
+::-webkit-scrollbar-track {
+background: #f1f1f1;
+border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+background: #888;
+border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+background: #555;
+}
+
+.tab-navigation {
+  margin-top: 2rem;
+}
+
+.nav-tabs .nav-link {
+    color: var(--text-primary); /* Use your system's primary text color */
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 0;
+    padding: 1rem 1.5rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--primary-color); /* Use your system's primary color */
+    background-color: var(--card-bg); /* Use your system's card background color */
+    border-color: var(--border-color) var(--border-color) var(--card-bg);
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--secondary-color); /* Use your system's secondary color */
+    border-color: var(--border-color) var(--border-color) var(--border-color);
+}
+
+
+
+/* Header Styles */
+.main-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.navbar-nav .nav-link {
+  padding: 0.8rem 1.2rem;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.navbar-nav .nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: white;
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.navbar-nav .nav-link:hover::after,
+.navbar-nav .nav-link.active::after {
+  width: 80%;
+}
+
+/* Footer Styles */
+.footer {
+  margin-top: auto;
+}
+
+.footer-info p {
+  margin-bottom: 0;
+  line-height: 1.8;
+}
+
+.social-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+  color: white;
+  margin-right: 10px;
+  transition: all 0.3s ease;
+}
+
+.social-links a:hover {
+  background: white;
+  color: var(--primary-color);
+  transform: translateY(-3px);
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+}
+
+.footer-links a {
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  display: block;
+  padding: 0.4rem 0;
+  transition: all 0.3s ease;
+}
+
+.footer-links a:hover {
+  color: white;
+  transform: translateX(5px);
+}
+
+.footer form .form-control {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  color: white;
+  padding: 0.8rem;
+}
+
+.footer form .form-control::placeholder {
+  color: rgba(255,255,255,0.5);
+}
+
+.footer form .btn {
+  padding: 0.8rem 1.5rem;
+  font-weight: 600;
+}
+.container {
+  flex: 1 0 auto; /* Changed from flex: 1 to flex: 1 0 auto */
+}
+
+/* Make sure the footer stays at the bottom */
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  flex: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .footer-top {
+    text-align: center;
+  }
+
+  .social-links {
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+
+  .footer-links {
+    margin-bottom: 2rem;
+  }
+
+  .footer form {
+    max-width: 300px;
+    margin: 0 auto;
+  }
+}
+
+/* Add these styles to your existing CSS */
+.table td.expanded {
+  white-space: normal !important;
+  max-width: none !important;
+  background-color: rgba(13, 17, 33, 0.9) !important;
+  transition: all 0.3s ease;
+}
+
+.table td {
+  position: relative;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.table td::after {
+  content: '↕';
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity 0.2s;
+  font-size: 12px;
+}
+
+.table td:hover::after {
+  opacity: 0.5;
+}
+
+/* Add a subtle animation for expansion */
+@keyframes expandCell {
+  from { max-height: 50px; }
+  to { max-height: 500px; }
+}
+
+.table td.expanded {
+  animation: expandCell 0.3s ease-out;
+}
+
+/* Add these styles to your existing CSS */
+
+/* Copy button styles */
+.copy-btn {
+  opacity: 0;
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: var(--primary-color);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+td:hover .copy-btn {
+  opacity: 1;
+}
+
+/* Toast notification fix */
+.toast-notification {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1050;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.toast-notification.success {
+  border-left: 4px solid #10B981;
+}
+
+.toast-notification.error {
+  border-left: 4px solid #EF4444;
+}
+
+/* Back to top button */
+#back-to-top {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: var(--primary-color);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 999;
+}
+
+#back-to-top.show {
+  opacity: 1;
+}
+
+
+
+/* Progress indicator */
+.analysis-progress {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  z-index: 1000;
+}
+
+.progress-bar {
+  width: 300px;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress {
+  height: 100%;
+  background: var(--primary-color);
+  width: 0;
+  transition: width 0.3s ease;
+}
+
+.progress-status {
+  text-align: center;
+  margin-top: 1rem;
+  color: var(--text-secondary);
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table td, .table th {
+    white-space: nowrap;
+    min-width: 120px;
+  }
+
+  .table td.expanded {
+    white-space: normal;
+  }
+}
+
+/* Smooth transitions */
+.tab-content {
+  transition: opacity 0.15s ease;
+  min-height: auto !important;
+}
+
+/* Animations */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+
+
+/* Tab Content Styling */
+.results-section .tab-content {
+  background: var(--card-bg);
+  padding: 2rem;
+  color: var(--text-primary);
+}
+
+/* Literature Review Table */
+.table-container {
+  background: rgba(13, 17, 33, 0.5);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 1rem;
+  border: 1px solid var(--border-color);
+}
+
+.table {
+  color: var(--text-primary);
+  margin-bottom: 0;
+}
+
+
+
+.table td {
+  color: var(--text-primary);
+  border: none;
+  padding: 1rem;
+  background: rgba(13, 17, 33, 0.3);
+  transition: all 0.3s ease;
+}
+
+.table tr:hover td {
+  background: rgba(0, 163, 255, 0.1);
+}
+
+/* Generated Paper Section */
+.research-paper {
+  background: var(--card-bg);
+  border-radius: 8px;
+  padding: 2rem;
+  color: var(--text-primary);
+  line-height: 1.8;
+  font-family: "Inter", sans-serif;
+}
+
+
+</style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col">
-    <div 
-        x-data="candidateAssessment()" 
-        class="container mx-auto px-4 py-8"
-    >
-        <div class="max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
-            <!-- Tabbed Navigation -->
-            <div class="bg-gray-100 border-b">
-                <nav class="flex">
-                    <button 
-                        @click="activeTab = 'upload'"
-                        :class="{
-                            'bg-white text-blue-600 border-blue-600': activeTab === 'upload',
-                            'text-gray-600 hover:bg-gray-50': activeTab !== 'upload'
-                        }"
-                        class="flex-1 py-3 px-4 text-center font-semibold border-b-2 transition"
-                    >
-                        CV Analysis
-                    </button>
-                    <button 
-                        @click="activeTab = 'chat'"
-                        :class="{
-                            'bg-white text-blue-600 border-blue-600': activeTab === 'chat',
-                            'text-gray-600 hover:bg-gray-50': activeTab !== 'chat',
-                            'opacity-50 cursor-not-allowed': !analysisResult
-                        }"
-                        :disabled="!analysisResult"
-                        class="flex-1 py-3 px-4 text-center font-semibold border-b-2 transition"
-                    >
-                        AI Candidate Chat
-                    </button>
-                </nav>
-            </div>
-
-            <!-- Upload Section -->
-            <div x-show="activeTab === 'upload'" class="p-6">
-                <h1 class="text-3xl font-bold text-center mb-6 text-blue-600">
-                    Candidate Assessment
-                </h1>
-
-                <div x-show="!analysisResult" class="space-y-4">
-                    <form @submit.prevent="uploadCV" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Upload CV (PDF)</label>
-                            <input 
-                                type="file" 
-                                accept=".pdf" 
-                                @change="handleFileSelect" 
-                                class="mt-1 block w-full text-sm text-gray-500 
-                                file:mr-4 file:py-2 file:px-4
-                                file:rounded-full file:border-0
-                                file:text-sm file:font-semibold
-                                file:bg-blue-50 file:text-blue-700
-                                hover:file:bg-blue-100"
-                            >
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700">Job Description</label>
-                            <textarea 
-                                x-model="jobDescription" 
-                                rows="4" 
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200"
-                                placeholder="Paste the job description here..."
-                            ></textarea>
-                        </div>
-
-                        <button 
-                            type="submit" 
-                            :disabled="!cvFile || !jobDescription"
-                            class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 
-                            disabled:opacity-50 disabled:cursor-not-allowed transition"
-                        >
-                            Analyze Candidate
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Analysis Result Summary -->
-                <div x-show="analysisResult" x-cloak>
-                    <div class="bg-blue-50 p-4 rounded-lg mb-4">
-                        <h2 class="text-xl font-semibold text-blue-800">Candidate Match Score</h2>
-                        <div class="flex items-center">
-                            <div 
-                                class="text-4xl font-bold mr-4"
-                                :class="{
-                                    'text-green-600': analysisResult.match_score > 70,
-                                    'text-yellow-600': analysisResult.match_score >= 50 && analysisResult.match_score <= 70,
-                                    'text-red-600': analysisResult.match_score < 50
-                                }"
-                            >
-                                {{ analysisResult.match_score }}%
-                            </div>
-                            <p class="text-gray-600">Compatibility with Job Description</p>
-                        </div>
-                    </div>
-
-                    <div class="space-y-4">
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-700">Extracted Skills</h3>
-                            <div class="flex flex-wrap gap-2 mt-2">
-                                <template x-for="skill in analysisResult.cv_data.skills">
-                                    <span 
-                                        class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
-                                        x-text="skill"
-                                    ></span>
-                                </template>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Interactive Chat Section -->
-            <div x-show="activeTab === 'chat'" x-cloak class="flex flex-col h-[600px]">
-                <!-- Chat Messages Container -->
-                <div class="flex-grow overflow-y-auto p-4 chat-scrollbar bg-gray-50">
-                    <div class="space-y-4">
-                        <!-- Initial System Message -->
-                        <div class="flex">
-                            <div class="bg-blue-100 text-blue-800 p-3 rounded-lg max-w-[80%] mr-auto">
-                                <p>👋 Hi there! I'm your AI Candidate Assistant. I can help you evaluate this candidate by answering any questions about their CV, skills, and job fit. Feel free to ask anything!</p>
-                            </div>
-                        </div>
-
-                        <!-- Dynamic Chat Messages -->
-                        <template x-for="(message, index) in chatMessages" :key="index">
-                            <div 
-                                class="flex"
-                                :class="message.role === 'user' ? 'justify-end' : 'justify-start'"
-                            >
-                                <div 
-                                    class="p-3 rounded-lg max-w-[80%] break-words"
-                                    :class="message.role === 'user' 
-                                        ? 'bg-blue-600 text-white' 
-                                        : 'bg-gray-200 text-gray-800'"
-                                >
-                                    <p x-text="message.content"></p>
-                                </div>
-                            </div>
-                        </template>
-
-                        <!-- Loading Indicator -->
-                        <div x-show="isLoading" class="flex justify-start">
-                            <div class="bg-gray-200 text-gray-800 p-3 rounded-lg">
-                                <div class="typing">Generating response...</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Chat Input -->
-                <div class="bg-white p-4 border-t">
-                    <form @submit.prevent="sendChatMessage" class="flex">
-                        <input 
-                            type="text" 
-                            x-model="chatInput" 
-                            placeholder="Ask about the candidate..."
-                            class="flex-grow mr-2 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                        <button 
-                            type="submit"
-                            :disabled="!chatInput || isLoading"
-                            class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 
-                            disabled:opacity-50 disabled:cursor-not-allowed transition"
-                        >
-                            Send
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
+<body>
+  <div class="glow-line"></div>
+<div class="glow-line"></div>
+<div class="glow-line"></div>
+<div class="glow-line"></div>
+<div class="container">
+<header class="main-header">
+  <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center" href="/">
+        <i class="fas fa-microscope me-2"></i>
+        <span class="brand-text">Research Analyzer</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+</button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link active" href="#"><i class="fas fa-home me-1"></i> Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#"><i class="fas fa-book me-1"></i> Library</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#"><i class="fas fa-chart-bar me-1"></i> Analytics</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#"><i class="fas fa-question-circle me-1"></i> Help</a>
+          </li>
+        </ul>
+      </div>
     </div>
+  </nav>
+</header>
+<!-- Add this right after the app-header div and before the flash messages -->
+<div class="tab-navigation mb-4">
+  <div class="nav nav-tabs" role="tablist">
+    <button class="nav-link active" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload-content" type="button" role="tab">
+      <i class="fas fa-upload me-2" ></i>Upload Papers
+    </button>
+    <button class="nav-link" id="search-tab" data-bs-toggle="tab" data-bs-target="#search-content" type="button" role="tab">
+      <i class="fas fa-search me-2" ></i>Search Papers
+    </button>
+  </div>
+</div>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{ category }} d-flex align-items-center">
+<i class="fas fa-info-circle me-2"></i>
+{{ message }}
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
 
-    <script>
-        function candidateAssessment() {
-            return {
-                activeTab: 'upload',
-                cvFile: null,
-                jobDescription: '',
-                analysisResult: null,
-                
-                // Chat-specific properties
-                chatInput: '',
-                chatMessages: [],
-                isLoading: false,
+<div class="tab-content">
+  <!-- Upload tab content -->
+  <div class="tab-pane fade show active" id="upload-content" role="tabpanel">
+    <div class="upload-section">
+  <form id="upload-form" method="post" enctype="multipart/form-data">
+    <div class="mb-4">
+      <label for="custom_title" class="form-label">
+        <i class="fas fa-heading me-2"></i>Research Paper Title (Optional)
+      </label>
+      <input type="text" class="form-control" id="custom_title" name="custom_title" placeholder="Enter your preferred title">
+    </div>
+    <div class="mb-4">
+      <div class="upload-area" id="upload-area">
+        <input type="file" class="file-input" id="papers" name="papers" multiple accept=".pdf,.docx" required>
+        <div class="upload-content">
+          <i class="fas fa-cloud-upload-alt upload-icon"></i>
+          <h3 class="upload-title">Drag & Drop your files here</h3>
+          <p class="upload-text">or</p>
+          <button type="button" class="browse-btn" onclick="document.getElementById('papers').click()">
+            <i class="fas fa-folder-open me-2"></i>Browse Files
+          </button>
+          <p class="upload-hint">Supported formats: PDF, DOCX</p>
+        </div>
+      </div>
+      <!-- Simple Alert Message -->
+      <div id="upload-alert" class="upload-alert mt-3" style="display: none;"></div>
+    </div>
+    <button type="submit" class="btn btn-primary" onclick="showLoading()">
+      <i class="fas fa-analytics me-2"></i>Analyze Papers
+    </button>
+  </form>
+  <div id="loading" class="loading" style="display: none;">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden" style="color:darkred">Loading...</span>
+    </div>
+    <p class="mt-3 mb-0">Analyzing papers... This may take a few minutes.</p>
+  </div>
+</div>
+</div>
+</div>
+<!-- Search tab content -->
+  <div class="tab-pane fade" id="search-content" role="tabpanel">
+    <div class="search-section">
+      <form id="search-form" method="post" action="/search">
+        <div class="mb-4">
+          <label for="search_title" class="form-label">
+            <i class="fas fa-heading me-2"></i>Paper Title
+          </label>
+          <input type="text" class="form-control" id="search_title" name="search_title" placeholder="Enter paper title to search">
+        </div>
+        <div class="mb-4">
+          <label for="search_keywords" class="form-label">
+            <i class="fas fa-tags me-2"></i>Keywords
+          </label>
+          <input type="text" class="form-control" id="search_keywords" name="search_keywords" placeholder="Enter comma-separated keywords (e.g., machine learning, neural networks)">
+        </div>
+        <div class="mb-4">
+          <label for="search_custom_title" class="form-label">
+            <i class="fas fa-heading me-2"></i>Research Paper Title (Optional)
+          </label>
+          <input type="text" class="form-control" id="search_custom_title" name="custom_title" placeholder="Enter your preferred title for the generated paper">
+        </div>
+        <button type="submit" class="btn btn-primary" onclick="showSearchLoading()">
+          <i class="fas fa-search me-2"></i>Search and Analyze
+        </button>
+      </form>
+      <div id="search-loading" class="loading" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3 mb-0">Searching and analyzing papers... This may take a few minutes.</p>
+      </div>
+    </div>
+  </div>
+</div>
 
-                handleFileSelect(event) {
-                    this.cvFile = event.target.files[0];
-                },
+<!-- Results Tabs Section -->
+{% if papers_data or research_paper or visualizations %}
+<div class="results-section mt-4">
+  <!-- Results Navigation Tabs -->
+  <ul class="nav nav-tabs" id="results-tabs" role="tablist">
+    {% if papers_data %}
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="literature-tab" data-bs-toggle="tab" data-bs-target="#literature" type="button" role="tab">
+        <i class="fas fa-book-reader me-2"></i>Literature Review
+      </button>
+    </li>
+    {% endif %}
 
-                async uploadCV() {
-                    const formData = new FormData();
-                    formData.append('cv', this.cvFile);
-                    formData.append('job_description', this.jobDescription);
+    {% if research_paper %}
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="paper-tab" data-bs-toggle="tab" data-bs-target="#paper" type="button" role="tab">
+        <i class="fas fa-file-alt me-2"></i>Generated Paper
+      </button>
+    </li>
+    {% endif %}
 
-                    try {
-                        const response = await fetch('/upload', {
-                            method: 'POST',
-                            body: formData
-                        });
-                        this.analysisResult = await response.json();
-                        this.activeTab = 'chat';
-                    } catch (error) {
-                        console.error('Upload error:', error);
-                        alert('Error uploading CV. Please try again.');
-                    }
-                },
+    {% if visualizations %}
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="visuals-tab" data-bs-toggle="tab" data-bs-target="#visuals" type="button" role="tab">
+        <i class="fas fa-chart-line me-2"></i>Visual Analysis
+      </button>
+    </li>
+    {% endif %}
 
-                async sendChatMessage() {
-                    if (!this.chatInput.trim()) return;
+    {% if papers_data %}
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat" type="button" role="tab">
+        <i class="fas fa-comments me-2"></i>Chat Assistant
+      </button>
+    </li>
+    {% endif %}
+  </ul>
 
-                    // Add user message to chat
-                    this.chatMessages.push({
-                        role: 'user',
-                        content: this.chatInput
-                    });
+  <!-- Tab Content -->
+  <div class="tab-content p-4 bg-white border border-top-0 rounded-bottom" id="results-content">
 
-                    // Reset input and set loading
-                    const userQuery = this.chatInput;
-                    this.chatInput = '';
-                    this.isLoading = true;
+    {% if papers_data %}
+    <div class="tab-pane fade show active" id="literature" role="tabpanel">
+      <div class="table-container">
+        <div class="table-responsive">
+              <!-- Literature Review Tab -->
+    <div class="table-controls mb-3">
+  <button class="btn btn-secondary me-2" onclick="exportTableData('csv')">
+    <i class="fas fa-file-csv me-1"></i>Export CSV
+  </button>
+  <button class="btn btn-secondary" onclick="exportTableData('excel')">
+    <i class="fas fa-file-excel me-1"></i>Export Excel
+  </button>
+</div>
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th>Title</th>
+                <th>Domain</th>
+                <th>Publisher</th>
+                <th>Objective</th>
+                <th>Technique/Method</th>
+                <th>Advanced Features</th>
+                <th>Dataset</th>
+                <th>Results</th>
+                <th>Evaluation Metrics</th>
+                <th>Limitations</th>
+                <th>Future Work</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for paper in papers_data %}
+              <tr>
+                <td>{{ paper.publication_year }}</td>
+                <td>{{ paper.title }}</td>
+                <td>{{ paper.domain }}</td>
+                <td>{{ paper.publisher }}</td>
+                <td>{{ paper.objective }}</td>
+                <td>{{ paper.technique }}</td>
+                <td>{{ paper.advanced_features|join(", ") if paper.advanced_features is sequence else paper.advanced_features }}</td>
+                <td>{{ paper.dataset_used }}</td>
+                <td>{{ paper.results }}</td>
+                <td>{{ paper.accuracy_metrics }}</td>
+                <td>{{ paper.limitations }}</td>
+                <td>{{ paper.future_work }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    {% endif %}
 
-                    try {
-                        const response = await fetch('/chat', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                query: userQuery,
-                                cv_data: this.analysisResult.cv_data,
-                                job_description: this.analysisResult.job_description
-                            })
-                        });
-                        const data = await response.json();
+    <!-- Generated Paper Tab -->
+    {% if research_paper %}
+    <div class="tab-pane fade" id="paper" role="tabpanel">
+      <div class="research-paper">
+        {{ research_paper | safe }}
+      </div>
+      <div class="text-center mt-4">
+        <button class="btn btn-primary me-2" onclick="downloadPaper()">
+          <i class="fas fa-download me-2"></i>Download Paper
+        </button>
+        <button class="btn btn-secondary" onclick="printPaper()">
+          <i class="fas fa-print me-2"></i>Print Paper
+        </button>
+      </div>
+    </div>
+    {% endif %}
 
-                        // Add AI response to chat
-                        this.chatMessages.push({
-                            role: 'ai',
-                            content: data.insights
-                        });
-                    } catch (error) {
-                        console.error('AI query error:', error);
-                        this.chatMessages.push({
-                            role: 'ai',
-                            content: 'Sorry, there was an error processing your request. Please try again.'
-                        });
-                    } finally {
-                        this.isLoading = false;
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- Visualizations Tab -->
+    {% if visualizations %}
+    <div class="tab-pane fade" id="visuals" role="tabpanel">
+      <div class="visualization-grid">
+        {% if visualizations.pub_trend %}
+        <div class="visualization-card">
+          {{ visualizations.pub_trend | safe }}
+        </div>
+        {% endif %}
+        {% if visualizations.domain_dist %}
+        <div class="visualization-card">
+          {{ visualizations.domain_dist | safe }}
+        </div>
+        {% endif %}
+        {% if visualizations.methods_tree %}
+        <div class="visualization-card">
+          {{ visualizations.methods_tree | safe }}
+        </div>
+        {% endif %}
+        {% if visualizations.features_dist %}
+        <div class="visualization-card">
+          {{ visualizations.features_dist | safe }}
+        </div>
+        {% endif %}
+        {% if visualizations.dataset_dist %}
+        <div class="visualization-card">
+          {{ visualizations.dataset_dist | safe }}
+        </div>
+        {% endif %}
+        {% if visualizations.keywords_dist %}
+        <div class="visualization-card">
+          {{ visualizations.keywords_dist | safe }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Chat Tab -->
+    {% if papers_data %}
+    <div class="tab-pane fade" id="chat" role="tabpanel">
+      <div id="chat-messages"></div>
+<div class="language-selector mb-3">
+  <div class="btn-group" role="group" aria-label="Language Selection">
+    <button type="button" class="btn btn-outline-primary language-btn" data-language="en">
+      <i class="fas fa-globe"></i> English
+    </button>
+    <button type="button" class="btn btn-outline-primary language-btn" data-language="ms">
+      <i class="fas fa-globe"></i> Bahasa Melayu
+    </button>
+  </div>
+</div>
+
+<!-- Update the chat input placeholder based on language -->
+<div class="chat-input-container">
+  <div class="chat-input-group">
+    <input type="text" id="chat-input" class="form-control"
+           placeholder="Ask questions about the analyzed papers...">
+    <button class="btn btn-primary" onclick="sendMessage()">
+      <i class="fas fa-paper-plane me-2"></i>Send
+    </button>
+  </div>
+</div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+<footer class="footer mt-5">
+  <div class="footer-top py-5" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-lg-4 col-md-6">
+          <div class="footer-info">
+            <h3 class="text-white"><i class="fas fa-microscope me-2"></i>Research Analyzer</h3>
+            <p class="text-white-50 mt-3">
+              Advanced research paper analysis platform for academics, researchers, and students.
+            </p>
+            <div class="social-links mt-4">
+              <a href="#" class="twitter"><i class="fab fa-twitter"></i></a>
+              <a href="#" class="facebook"><i class="fab fa-facebook"></i></a>
+              <a href="#" class="linkedin"><i class="fab fa-linkedin"></i></a>
+              <a href="#" class="github"><i class="fab fa-github"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-6">
+          <h4 class="text-white mb-4">Quick Links</h4>
+          <ul class="list-unstyled footer-links">
+            <li><a href="#">Home</a></li>
+            <li><a href="#">About</a></li>
+            <li><a href="#">Features</a></li>
+            <li><a href="#">Pricing</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <h4 class="text-white mb-4">Resources</h4>
+          <ul class="list-unstyled footer-links">
+            <li><a href="#">Documentation</a></li>
+            <li><a href="#">API Reference</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Support Center</a></li>
+            <li><a href="#">Terms of Service</a></li>
+          </ul>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <h4 class="text-white mb-4">Newsletter</h4>
+          <p class="text-white-50">Stay updated with our latest features and releases.</p>
+          <form class="mt-3">
+            <div class="input-group">
+              <input type="email" class="form-control" placeholder="Enter your email">
+              <button class="btn btn-light" type="button">Subscribe</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom py-3" style="background: var(--secondary-color);">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 text-center text-md-start">
+          <p class="mb-0 text-white-50">© 2024 Research Analyzer. All rights reserved.</p>
+        </div>
+        <div class="col-md-6 text-center text-md-end">
+          <div class="footer-links">
+            <a href="#" class="text-white-50 me-3">Privacy Policy</a>
+            <a href="#" class="text-white-50">Terms of Use</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Language handling
+let currentLanguage = 'en';
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Set up language buttons
+  const languageButtons = document.querySelectorAll('.language-btn');
+  languageButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const language = this.dataset.language;
+      setLanguage(language);
+      
+      // Update active button
+      languageButtons.forEach(btn => btn.classList.remove('active'));
+      this.classList.add('active');
+      
+      // Update placeholder text
+      const chatInput = document.getElementById('chat-input');
+      chatInput.placeholder = language === 'ms' 
+        ? 'Tanya soalan tentang kertas yang dianalisis...'
+        : 'Ask questions about the analyzed papers...';
+    });
+  });
+});
+
+async function setLanguage(language) {
+  try {
+    const response = await fetch('/set_language', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ language })
+    });
+    
+    if (response.ok) {
+      currentLanguage = language;
+      const data = await response.json();
+      showToast(
+        language === 'ms' 
+          ? 'Bahasa berjaya ditukar ke Bahasa Melayu' 
+          : 'Language successfully changed to English'
+      );
+    }
+  } catch (error) {
+    console.error('Error setting language:', error);
+    showToast(
+      currentLanguage === 'ms'
+        ? 'Ralat menukar bahasa'
+        : 'Error changing language',
+      'error'
+    );
+  }
+}
+</script>
+  <script>
+// Create floating particles
+function createParticles() {
+  const particleCount = 50;
+  for (let i = 0; i < particleCount; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'particle';
+    particle.style.left = Math.random() * 100 + 'vw';
+    particle.style.top = Math.random() * 100 + 'vh';
+    particle.style.animationDuration = Math.random() * 3 + 2 + 's';
+    particle.style.animationDelay = Math.random() * 2 + 's';
+    document.body.appendChild(particle);
+  }
+}
+
+// Initialize particles on load
+window.addEventListener('load', createParticles);
+</script>
+<script>
+function showLoading() {
+document.getElementById('loading').style.display = 'block';
+}
+
+function downloadPaper() {
+const paperContent = document.querySelector('.paper-content').innerText;
+const blob = new Blob([paperContent], { type: 'text/plain' });
+const url = window.URL.createObjectURL(blob);
+const a = document.createElement('a');
+a.href = url;
+a.download = 'research_paper.txt';
+a.click();
+window.URL.revokeObjectURL(url);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+const tableCells = document.querySelectorAll('.table td');
+tableCells.forEach(cell => {
+cell.addEventListener('click', function() {
+this.classList.toggle('expanded');
+});
+});
+});
+function printPaper() {
+const paperContent = document.querySelector('.research-paper');
+const printWindow = window.open('', '_blank');
+printWindow.document.write(`
+<html>
+<head>
+<title>Research Paper</title>
+<style>
+${document.querySelector('style').innerText}
+</style>
+</head>
+<body>
+${paperContent.innerHTML}
+</body>
+</html>
+`);
+printWindow.document.close();
+printWindow.print();
+}
+</script>
+<script>
+function showChatSection() {
+document.getElementById('chat-section').style.display = 'block';
+}
+
+async function sendMessage() {
+const input = document.getElementById('chat-input');
+const message = input.value.trim();
+if (!message) return;
+input.value = '';
+input.disabled = true;
+// Add user message
+appendMessage(message, true);
+// Show typing indicator
+const typingIndicator = showGeneratingResponse();
+try {
+const response = await fetch('/chat', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify({ message })
+});
+// Remove typing indicator
+hideGeneratingResponse(typingIndicator);
+if (!response.ok) {
+const errorData = await response.json();
+appendMessage(errorData.response || 'An error occurred. Please try again.', false);
+return;
+}
+const data = await response.json();
+appendMessage(data.response, false);
+} catch (error) {
+hideGeneratingResponse(typingIndicator);
+appendMessage('An error occurred. Please try again.', false);
+} finally {
+input.disabled = false;
+input.focus();
+}
+}
+
+function appendMessage(message, isUser) {
+const chatMessages = document.getElementById('chat-messages');
+const messageDiv = document.createElement('div');
+messageDiv.className = `chat-message ${isUser ? 'user-message' : 'assistant-message'}`;
+if (isUser) {
+messageDiv.textContent = message;
+} else {
+messageDiv.innerHTML = message;
+}
+chatMessages.appendChild(messageDiv);
+chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Update DOM when page loads
+document.addEventListener('DOMContentLoaded', function() {
+const chatInput = document.getElementById('chat-input');
+const chatInputContainer = document.querySelector('.chat-input-container');
+// Add chat controls
+const chatControls = document.createElement('div');
+chatControls.className = 'chat-controls';
+chatControls.innerHTML = `
+<button class="chat-control-btn" title="Clear chat">
+<i class="fas fa-trash-alt"></i>
+</button>
+`;
+chatInputContainer.appendChild(chatControls);
+// Clear chat functionality
+chatControls.querySelector('.chat-control-btn').addEventListener('click', function() {
+document.getElementById('chat-messages').innerHTML = '';
+});
+});
+
+// Enhanced keyboard handling
+document.getElementById('chat-input').addEventListener('keydown', function(e) {
+if (e.key === 'Enter' && !e.shiftKey) {
+e.preventDefault();
+sendMessage();
+}
+});
+
+// Show chat section when papers are analyzed
+{% if papers_data %}
+showChatSection();
+{% endif %}
+
+// Enhanced Table Functionality
+document.addEventListener('DOMContentLoaded', function() {
+const tableRows = document.querySelectorAll('.table tbody tr');
+tableRows.forEach(row => {
+row.addEventListener('click', function() {
+// Remove expanded class from all other rows
+tableRows.forEach(r => {
+if (r !== row) r.classList.remove('expanded');
+});
+// Toggle expanded class on clicked row
+this.classList.toggle('expanded');
+});
+});
+});
+
+
+// Navbar collapse handler
+const navbarToggler = document.querySelector('.navbar-toggler');
+const navbarCollapse = document.querySelector('.navbar-collapse');
+
+if (navbarToggler && navbarCollapse) {
+  navbarToggler.addEventListener('click', () => {
+    navbarCollapse.classList.toggle('show');
+  });
+
+  // Close navbar when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!navbarToggler.contains(e.target) && !navbarCollapse.contains(e.target)) {
+      navbarCollapse.classList.remove('show');
+    }
+  });
+}
+
+// Update the showGeneratingResponse function
+function showGeneratingResponse() {
+  const chatMessages = document.getElementById('chat-messages');
+  const typingDiv = document.createElement('div');
+  typingDiv.className = 'assistant-typing';
+  typingDiv.innerHTML = `
+    <div class="typing-indicator">
+      ${currentLanguage === 'ms' ? 'Menjana respons' : 'Generating response'}
+      <span class="typing-dot"></span>
+      <span class="typing-dot"></span>
+      <span class="typing-dot"></span>
+    </div>
+  `;
+  chatMessages.appendChild(typingDiv);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  return typingDiv;
+}
+
+function hideGeneratingResponse(indicator) {
+if (indicator && indicator.parentElement) {
+indicator.remove();
+}
+}
+
+// Add this to your existing JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+  const uploadArea = document.getElementById('upload-area');
+  const fileInput = document.getElementById('papers');
+  const uploadAlert = document.getElementById('upload-alert');
+
+  // Drag and drop handlers
+  ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    uploadArea.addEventListener(eventName, preventDefaults, false);
+  });
+
+  function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    uploadArea.addEventListener(eventName, highlight, false);
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    uploadArea.addEventListener(eventName, unhighlight, false);
+  });
+
+  function highlight(e) {
+    uploadArea.classList.add('dragover');
+  }
+
+  function unhighlight(e) {
+    uploadArea.classList.remove('dragover');
+  }
+
+  uploadArea.addEventListener('drop', handleDrop, false);
+
+  function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    fileInput.files = files;
+    showUploadMessage(files);
+  }
+
+  // File input change handler
+  fileInput.addEventListener('change', function(e) {
+    showUploadMessage(this.files);
+  });
+
+  function showUploadMessage(files) {
+    const validTypes = ['.pdf', '.docx', 'application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    const invalidFiles = Array.from(files).filter(file =>
+      !validTypes.some(type => file.name.toLowerCase().endsWith(type) || file.type === type)
+    );
+
+    if (invalidFiles.length > 0) {
+      showAlert('error', 'Please upload only PDF or DOCX files.');
+    } else {
+      showAlert('success', `${files.length} file${files.length !== 1 ? 's' : ''} selected successfully!`);
+    }
+  }
+
+  // Alert handling
+function showAlert(type, message) {
+  const alertDiv = document.getElementById('upload-alert');
+  alertDiv.className = `upload-alert mt-3 ${type}`;
+  alertDiv.textContent = message;
+  alertDiv.style.display = 'block';
+
+  // Hide alert after 5 seconds
+  setTimeout(() => {
+    alertDiv.style.display = 'none';
+  }, 5000);
+}
+
+});
+</script>
+<script>
+// Existing JavaScript remains the same
+
+function showSearchLoading() {
+  document.getElementById('search-loading').style.display = 'flex';
+  document.getElementById('search-form').style.opacity = '0.5';
+}
+
+// Add this if you want to preserve the active tab after form submission
+document.addEventListener('DOMContentLoaded', function() {
+  // Check if there's a hash in the URL
+  if (window.location.hash === '#search') {
+    // Activate the search tab
+    document.querySelector('#search-tab').click();
+  }
+});
+</script>
+<script>
+// Add this code right after your existing scripts
+
+// Utility to copy text to clipboard
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Copied to clipboard!');
+  }).catch(err => {
+    showToast('Failed to copy text', 'error');
+  });
+}
+
+// Toast notification system
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `toast-notification ${type}`;
+  toast.innerHTML = `
+    <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+    <span>${message}</span>
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.remove();
+  }, 3000);
+}
+
+// Table enhancements
+function enhanceTable() {
+  const table = document.querySelector('.table');
+  if (!table) return;
+
+  // Add copy buttons to cells
+  const cells = table.querySelectorAll('td');
+  cells.forEach(cell => {
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'copy-btn';
+    copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+    copyBtn.onclick = (e) => {
+      e.stopPropagation();
+      copyToClipboard(cell.textContent);
+    };
+    cell.appendChild(copyBtn);
+  });
+
+  // Initialize sorting
+  const headers = table.querySelectorAll('th');
+  headers.forEach(header => {
+    header.style.cursor = 'pointer';
+    header.onclick = () => sortTable(header);
+  });
+}
+
+// Table sorting functionality
+function sortTable(header) {
+  const table = header.closest('table');
+  const tbody = table.querySelector('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  const index = Array.from(header.parentElement.children).indexOf(header);
+  const isAsc = header.classList.toggle('sort-asc');
+
+  const sortedRows = rows.sort((a, b) => {
+    const aVal = a.children[index].textContent;
+    const bVal = b.children[index].textContent;
+    return isAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+  });
+
+  tbody.innerHTML = '';
+  sortedRows.forEach(row => tbody.appendChild(row));
+}
+
+// Export table data
+function exportTableData(format) {
+  const table = document.querySelector('.table');
+  if (!table) return;
+
+  const rows = Array.from(table.querySelectorAll('tr'));
+  let data = rows.map(row =>
+    Array.from(row.querySelectorAll('th,td'))
+      .map(cell => cell.textContent.trim())
+  );
+
+  if (format === 'csv') {
+    const csv = data.map(row => row.join(',')).join('\n');
+    downloadFile(csv, 'table-data.csv', 'text/csv');
+  } else if (format === 'excel') {
+    import('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js')
+      .then(() => {
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+        XLSX.writeFile(wb, "table-data.xlsx");
+      });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const uploadForm = document.getElementById('upload-form');
+  if (uploadForm) {
+    uploadForm.onsubmit = function() {
+      showLoading();
+      return true; // Allow the form to submit normally
+    };
+  }
+});
+
+// Download file helper
+function downloadFile(content, fileName, contentType) {
+  const blob = new Blob([content], { type: contentType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Back to top button
+function initBackToTop() {
+  const btn = document.createElement('button');
+  btn.id = 'back-to-top';
+  btn.innerHTML = '<i class="fas fa-arrow-up"></i>';
+  document.body.appendChild(btn);
+
+  window.onscroll = () => {
+    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+      btn.classList.add('show');
+    } else {
+      btn.classList.remove('show');
+    }
+  };
+
+  btn.onclick = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  };
+}
+
+// Dark mode toggle
+function initDarkMode() {
+  const darkMode = localStorage.getItem('darkMode') === 'true';
+  if (darkMode) {
+    document.body.classList.add('dark-mode');
+  }
+
+  const toggle = document.createElement('button');
+  toggle.id = 'dark-mode-toggle';
+  toggle.innerHTML = `<i class="fas fa-${darkMode ? 'sun' : 'moon'}"></i>`;
+  document.body.appendChild(toggle);
+
+  toggle.onclick = () => {
+    document.body.classList.toggle('dark-mode');
+    const isDark = document.body.classList.contains('dark-mode');
+    localStorage.setItem('darkMode', isDark);
+    toggle.innerHTML = `<i class="fas fa-${isDark ? 'sun' : 'moon'}"></i>`;
+  };
+}
+
+// Progress indicator for paper analysis
+function initProgressIndicator() {
+  const progress = document.createElement('div');
+  progress.className = 'analysis-progress';
+  progress.innerHTML = `
+    <div class="progress-bar">
+      <div class="progress"></div>
+    </div>
+    <div class="progress-status">Analyzing papers...</div>
+  `;
+
+  return {
+    show: () => {
+      document.body.appendChild(progress);
+      simulateProgress();
+    },
+    hide: () => {
+      progress.remove();
+    }
+  };
+}
+
+function simulateProgress() {
+  const bar = document.querySelector('.progress');
+  let width = 0;
+  const interval = setInterval(() => {
+    if (width >= 90) {
+      clearInterval(interval);
+    } else {
+      width += Math.random() * 10;
+      bar.style.width = `${Math.min(width, 90)}%`;
+    }
+  }, 500);
+}
+
+// Touch gesture handling for table
+function initTouchGestures() {
+  const table = document.querySelector('.table');
+  if (!table) return;
+
+  let touchStartX = 0;
+  let touchEndX = 0;
+
+  table.addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+  });
+
+  table.addEventListener('touchend', e => {
+    touchEndX = e.changedTouches[0].clientX;
+    handleSwipe();
+  });
+
+  function handleSwipe() {
+    const diff = touchStartX - touchEndX;
+    const tableContainer = table.parentElement;
+    if (Math.abs(diff) > 50) {
+      tableContainer.scrollBy({
+        left: diff,
+        behavior: 'smooth'
+      });
+    }
+  }
+}
+
+// Initialize all features
+document.addEventListener('DOMContentLoaded', () => {
+  enhanceTable();
+  initBackToTop();
+  initDarkMode();
+  initTouchGestures();
+
+  // Add smooth transitions for tab switching
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', () => {
+      document.querySelector('.tab-content').style.opacity = '0';
+      setTimeout(() => {
+        document.querySelector('.tab-content').style.opacity = '1';
+      }, 150);
+    });
+  });
+});
+</script>
 </body>
 </html>
