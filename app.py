@@ -1167,4 +1167,4 @@ def generate_chat_response(user_message, papers_data, research_paper):
         
 
 if __name__ == '__main__':
-  app.run(port=5000)
+  app.run(port=10000)
