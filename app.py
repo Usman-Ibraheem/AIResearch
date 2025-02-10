@@ -3,6 +3,7 @@ import os
 import io
 import re
 import json
+import plotly.graph_objects as go
 from datetime import datetime
 from flask import Flask, request, render_template, jsonify, flash, session
 from pyngrok import ngrok
@@ -688,22 +689,42 @@ def generate_visualizations(papers_data):
 
         # 1. Publication Trend Over Years
         if 'publication_year' in df.columns and not df['publication_year'].empty:
-            years_count = df['publication_year'].value_counts().sort_index()
-            fig = px.line(x=years_count.index, y=years_count.values,
-                         title='Publications Over Years',
-                         labels={'x': 'Year', 'y': 'Number of Publications'})
-            fig.update_traces(line_color='#1f77b4')
-            visualizations['pub_trend'] = fig.to_html()
+            # Clean and validate publication years
+            df['publication_year'] = pd.to_numeric(df['publication_year'], errors='coerce')
+            years_count = df['publication_year'].dropna().value_counts().sort_index()
+            
+            if not years_count.empty:
+                # Convert index to strings to avoid issues with numeric handling
+                years_count.index = years_count.index.astype(str)
+                
+                fig = go.Figure()
+                fig.add_trace(go.Scatter(
+                    x=years_count.index,
+                    y=years_count.values,
+                    mode='lines+markers',
+                    line=dict(color='#1f77b4')
+                ))
+                
+                fig.update_layout(
+                    title='Publications Over Years',
+                    xaxis_title='Year',
+                    yaxis_title='Number of Publications',
+                    showlegend=False
+                )
+                visualizations['pub_trend'] = fig.to_html(full_html=False)
 
         # 2. Domain Distribution
-        if 'domain' in df.columns and not df['domain'].empty and df['domain'].notna().any():
-            domain_count = df['domain'].value_counts()
+        if 'domain' in df.columns and not df['domain'].empty:
+            domain_count = df['domain'].dropna().value_counts()
             if not domain_count.empty:
-                fig = px.pie(values=domain_count.values, names=domain_count.index,
-                           title='Research Domains Distribution')
-                visualizations['domain_dist'] = fig.to_html()
+                fig = go.Figure(data=[go.Pie(
+                    labels=domain_count.index,
+                    values=domain_count.values
+                )])
+                fig.update_layout(title='Research Domains Distribution')
+                visualizations['domain_dist'] = fig.to_html(full_html=False)
 
-        # 3. Methods/Techniques Word Cloud-style Visualization
+        # 3. Methods Analysis
         if 'methods' in df.columns:
             methods = []
             for paper_methods in df['methods']:
@@ -713,21 +734,20 @@ def generate_visualizations(papers_data):
                     methods.append(paper_methods)
 
             if methods:
-                methods_count = pd.Series(methods).value_counts()
+                methods_count = pd.Series(methods).value_counts().head(15)
                 if not methods_count.empty:
-                    # Create a proper DataFrame for treemap
-                    treemap_df = pd.DataFrame({
-                        'method': methods_count.index[:15],
-                        'count': methods_count.values[:15],
-                        'parent': ['Methods'] * len(methods_count.index[:15])
-                    })
-                    fig = px.treemap(
-                        treemap_df,
-                        path=['parent', 'method'],
-                        values='count',
-                        title='Top 15 Methods/Techniques Used'
+                    fig = go.Figure(data=[go.Bar(
+                        x=methods_count.index,
+                        y=methods_count.values,
+                        marker_color='#1f77b4'
+                    )])
+                    fig.update_layout(
+                        title='Top 15 Methods Used',
+                        xaxis_title='Method',
+                        yaxis_title='Frequency',
+                        xaxis_tickangle=-45
                     )
-                    visualizations['methods_tree'] = fig.to_html()
+                    visualizations['methods_dist'] = fig.to_html(full_html=False)
 
         # 4. Advanced Features Analysis
         if 'advanced_features' in df.columns:
@@ -739,30 +759,22 @@ def generate_visualizations(papers_data):
                     features.append(paper_features)
 
             if features:
-                features_count = pd.Series(features).value_counts()
+                features_count = pd.Series(features).value_counts().head(10)
                 if not features_count.empty:
-                    fig = px.bar(
-                        x=features_count.index[:10],
-                        y=features_count.values[:10],
+                    fig = go.Figure(data=[go.Bar(
+                        x=features_count.index,
+                        y=features_count.values,
+                        marker_color='#2ca02c'
+                    )])
+                    fig.update_layout(
                         title='Top Advanced Features',
-                        labels={'x': 'Feature', 'y': 'Frequency'}
+                        xaxis_title='Feature',
+                        yaxis_title='Frequency',
+                        xaxis_tickangle=-45
                     )
-                    visualizations['features_dist'] = fig.to_html()
+                    visualizations['features_dist'] = fig.to_html(full_html=False)
 
-        # 5. Dataset Usage Analysis
-        if 'dataset_used' in df.columns and df['dataset_used'].notna().any():
-            dataset_count = df['dataset_used'].value_counts()
-            if not dataset_count.empty:
-                fig = px.bar(
-                    x=dataset_count.index[:8],
-                    y=dataset_count.values[:8],
-                    title='Common Datasets Used',
-                    labels={'x': 'Dataset', 'y': 'Frequency'}
-                )
-                fig.update_layout(xaxis_tickangle=-45)
-                visualizations['dataset_dist'] = fig.to_html()
-
-        # 6. Research Focus Evolution (Keywords)
+        # 5. Keywords Distribution
         if 'keywords' in df.columns:
             keywords = []
             for paper_keywords in df['keywords']:
@@ -772,22 +784,20 @@ def generate_visualizations(papers_data):
                     keywords.append(paper_keywords)
 
             if keywords:
-                keywords_count = pd.Series(keywords).value_counts()
+                keywords_count = pd.Series(keywords).value_counts().head(12)
                 if not keywords_count.empty:
-                    # Create a proper DataFrame for scatter plot
-                    scatter_df = pd.DataFrame({
-                        'keyword': keywords_count.index[:12],
-                        'frequency': keywords_count.values[:12]
-                    })
-                    fig = px.scatter(
-                        scatter_df,
-                        x='keyword',
-                        y='frequency',
-                        size='frequency',
+                    fig = go.Figure(data=[go.Bar(
+                        x=keywords_count.index,
+                        y=keywords_count.values,
+                        marker_color='#ff7f0e'
+                    )])
+                    fig.update_layout(
                         title='Research Keywords Distribution',
-                        labels={'keyword': 'Keyword', 'frequency': 'Frequency'}
+                        xaxis_title='Keyword',
+                        yaxis_title='Frequency',
+                        xaxis_tickangle=-45
                     )
-                    visualizations['keywords_dist'] = fig.to_html()
+                    visualizations['keywords_dist'] = fig.to_html(full_html=False)
 
         return visualizations
 
