@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidate Assessment Tool</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+        /* Custom scrollbar for chat */
+        .chat-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .chat-scrollbar::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+        .chat-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+    <div 
+        x-data="candidateAssessment()" 
+        class="container mx-auto px-4 py-8"
+    >
+        <div class="max-w-4xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
+            <!-- Tabbed Navigation -->
+            <div class="bg-gray-100 border-b">
+                <nav class="flex">
+                    <button 
+                        @click="activeTab = 'upload'"
+                        :class="{
+                            'bg-white text-blue-600 border-blue-600': activeTab === 'upload',
+                            'text-gray-600 hover:bg-gray-50': activeTab !== 'upload'
+                        }"
+                        class="flex-1 py-3 px-4 text-center font-semibold border-b-2 transition"
+                    >
+                        CV Analysis
+                    </button>
+                    <button 
+                        @click="activeTab = 'chat'"
+                        :class="{
+                            'bg-white text-blue-600 border-blue-600': activeTab === 'chat',
+                            'text-gray-600 hover:bg-gray-50': activeTab !== 'chat',
+                            'opacity-50 cursor-not-allowed': !analysisResult
+                        }"
+                        :disabled="!analysisResult"
+                        class="flex-1 py-3 px-4 text-center font-semibold border-b-2 transition"
+                    >
+                        AI Candidate Chat
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Upload Section -->
+            <div x-show="activeTab === 'upload'" class="p-6">
+                <h1 class="text-3xl font-bold text-center mb-6 text-blue-600">
+                    Candidate Assessment
+                </h1>
+
+                <div x-show="!analysisResult" class="space-y-4">
+                    <form @submit.prevent="uploadCV" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Upload CV (PDF)</label>
+                            <input 
+                                type="file" 
+                                accept=".pdf" 
+                                @change="handleFileSelect" 
+                                class="mt-1 block w-full text-sm text-gray-500 
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-full file:border-0
+                                file:text-sm file:font-semibold
+                                file:bg-blue-50 file:text-blue-700
+                                hover:file:bg-blue-100"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Job Description</label>
+                            <textarea 
+                                x-model="jobDescription" 
+                                rows="4" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200"
+                                placeholder="Paste the job description here..."
+                            ></textarea>
+                        </div>
+
+                        <button 
+                            type="submit" 
+                            :disabled="!cvFile || !jobDescription"
+                            class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 
+                            disabled:opacity-50 disabled:cursor-not-allowed transition"
+                        >
+                            Analyze Candidate
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Analysis Result Summary -->
+                <div x-show="analysisResult" x-cloak>
+                    <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                        <h2 class="text-xl font-semibold text-blue-800">Candidate Match Score</h2>
+                        <div class="flex items-center">
+                            <div 
+                                class="text-4xl font-bold mr-4"
+                                :class="{
+                                    'text-green-600': analysisResult.match_score > 70,
+                                    'text-yellow-600': analysisResult.match_score >= 50 && analysisResult.match_score <= 70,
+                                    'text-red-600': analysisResult.match_score < 50
+                                }"
+                            >
+                                {{ analysisResult.match_score }}%
+                            </div>
+                            <p class="text-gray-600">Compatibility with Job Description</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-700">Extracted Skills</h3>
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                <template x-for="skill in analysisResult.cv_data.skills">
+                                    <span 
+                                        class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                                        x-text="skill"
+                                    ></span>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Chat Section -->
+            <div x-show="activeTab === 'chat'" x-cloak class="flex flex-col h-[600px]">
+                <!-- Chat Messages Container -->
+                <div class="flex-grow overflow-y-auto p-4 chat-scrollbar bg-gray-50">
+                    <div class="space-y-4">
+                        <!-- Initial System Message -->
+                        <div class="flex">
+                            <div class="bg-blue-100 text-blue-800 p-3 rounded-lg max-w-[80%] mr-auto">
+                                <p>👋 Hi there! I'm your AI Candidate Assistant. I can help you evaluate this candidate by answering any questions about their CV, skills, and job fit. Feel free to ask anything!</p>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Chat Messages -->
+                        <template x-for="(message, index) in chatMessages" :key="index">
+                            <div 
+                                class="flex"
+                                :class="message.role === 'user' ? 'justify-end' : 'justify-start'"
+                            >
+                                <div 
+                                    class="p-3 rounded-lg max-w-[80%] break-words"
+                                    :class="message.role === 'user' 
+                                        ? 'bg-blue-600 text-white' 
+                                        : 'bg-gray-200 text-gray-800'"
+                                >
+                                    <p x-text="message.content"></p>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Loading Indicator -->
+                        <div x-show="isLoading" class="flex justify-start">
+                            <div class="bg-gray-200 text-gray-800 p-3 rounded-lg">
+                                <div class="typing">Generating response...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Input -->
+                <div class="bg-white p-4 border-t">
+                    <form @submit.prevent="sendChatMessage" class="flex">
+                        <input 
+                            type="text" 
+                            x-model="chatInput" 
+                            placeholder="Ask about the candidate..."
+                            class="flex-grow mr-2 px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                        <button 
+                            type="submit"
+                            :disabled="!chatInput || isLoading"
+                            class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 
+                            disabled:opacity-50 disabled:cursor-not-allowed transition"
+                        >
+                            Send
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function candidateAssessment() {
+            return {
+                activeTab: 'upload',
+                cvFile: null,
+                jobDescription: '',
+                analysisResult: null,
+                
+                // Chat-specific properties
+                chatInput: '',
+                chatMessages: [],
+                isLoading: false,
+
+                handleFileSelect(event) {
+                    this.cvFile = event.target.files[0];
+                },
+
+                async uploadCV() {
+                    const formData = new FormData();
+                    formData.append('cv', this.cvFile);
+                    formData.append('job_description', this.jobDescription);
+
+                    try {
+                        const response = await fetch('/upload', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        this.analysisResult = await response.json();
+                        this.activeTab = 'chat';
+                    } catch (error) {
+                        console.error('Upload error:', error);
+                        alert('Error uploading CV. Please try again.');
+                    }
+                },
+
+                async sendChatMessage() {
+                    if (!this.chatInput.trim()) return;
+
+                    // Add user message to chat
+                    this.chatMessages.push({
+                        role: 'user',
+                        content: this.chatInput
+                    });
+
+                    // Reset input and set loading
+                    const userQuery = this.chatInput;
+                    this.chatInput = '';
+                    this.isLoading = true;
+
+                    try {
+                        const response = await fetch('/chat', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                query: userQuery,
+                                cv_data: this.analysisResult.cv_data,
+                                job_description: this.analysisResult.job_description
+                            })
+                        });
+                        const data = await response.json();
+
+                        // Add AI response to chat
+                        this.chatMessages.push({
+                            role: 'ai',
+                            content: data.insights
+                        });
+                    } catch (error) {
+                        console.error('AI query error:', error);
+                        this.chatMessages.push({
+                            role: 'ai',
+                            content: 'Sorry, there was an error processing your request. Please try again.'
+                        });
+                    } finally {
+                        this.isLoading = false;
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

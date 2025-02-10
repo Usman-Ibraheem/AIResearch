@@ -1,0 +1,11 @@
+flask
+gunicorn
+google-generativeai
+pandas
+matplotlib
+seaborn
+PyPDF2
+python-docx
+plotly
+pyngrok
+requests
