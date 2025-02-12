@@ -9,3 +9,5 @@ python-docx
 plotly
 pyngrok
 requests
+numpy
+nltk
