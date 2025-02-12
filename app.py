@@ -26,12 +26,6 @@ import requests
 from urllib.parse import quote_plus
 import xml.etree.ElementTree as ET
 from html import unescape
-import nltk
-from nltk.tokenize import word_tokenize, sent_tokenize
-from nltk.corpus import stopwords
-from nltk.stem import PorterStemmer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 
 
 # Configure logging
@@ -385,112 +379,6 @@ def generate_section_prompt(section_type, papers_data, custom_title=None, previo
     }
 
     return base_prompts.get(section_type, "")
-
-def preprocess_text(text):
-    """
-    Preprocess text by tokenizing, removing stopwords, and stemming
-    """
-    # Download required NLTK data
-    try:
-        nltk.data.find('tokenizers/punkt')
-        nltk.data.find('corpora/stopwords')
-    except LookupError:
-        nltk.download('punkt')
-        nltk.download('stopwords')
-    
-    # Tokenize and convert to lowercase
-    tokens = word_tokenize(text.lower())
-    
-    # Remove stopwords and non-alphabetic tokens
-    stop_words = set(stopwords.words('english'))
-    tokens = [token for token in tokens if token.isalnum() and token not in stop_words]
-    
-    # Stem tokens
-    stemmer = PorterStemmer()
-    tokens = [stemmer.stem(token) for token in tokens]
-    
-    return ' '.join(tokens)
-
-def detect_plagiarism(research_paper, papers_data):
-    """
-    Detect potential plagiarism in the generated research paper
-    """
-    try:
-        # Extract text content from papers_data
-        source_texts = []
-        for paper in papers_data:
-            paper_content = []
-            # Combine relevant fields from the paper
-            fields = ['objective', 'results', 'solution', 'limitations', 'future_work']
-            for field in fields:
-                if paper.get(field):
-                    paper_content.append(paper[field])
-            source_texts.append(' '.join(paper_content))
-        
-        # Preprocess all texts
-        preprocessed_paper = preprocess_text(research_paper)
-        preprocessed_sources = [preprocess_text(text) for text in source_texts]
-        
-        # Calculate TF-IDF vectors
-        vectorizer = TfidfVectorizer()
-        all_texts = [preprocessed_paper] + preprocessed_sources
-        tfidf_matrix = vectorizer.fit_transform(all_texts)
-        
-        # Calculate similarity scores
-        similarity_scores = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:])[0]
-        
-        # Analyze similarity at sentence level for detailed report
-        paper_sentences = sent_tokenize(research_paper)
-        detailed_matches = []
-        
-        for i, source_text in enumerate(source_texts):
-            source_sentences = sent_tokenize(source_text)
-            sentence_vectorizer = TfidfVectorizer()
-            
-            if paper_sentences and source_sentences:
-                try:
-                    sentence_matrix = sentence_vectorizer.fit_transform(paper_sentences + source_sentences)
-                    sentence_similarity = cosine_similarity(
-                        sentence_matrix[:len(paper_sentences)], 
-                        sentence_matrix[len(paper_sentences):]
-                    )
-                    
-                    # Find highly similar sentences
-                    for paper_idx, similarities in enumerate(sentence_similarity):
-                        max_sim = max(similarities)
-                        if max_sim > 0.8:  # Threshold for high similarity
-                            source_idx = np.argmax(similarities)
-                            detailed_matches.append({
-                                'paper_sentence': paper_sentences[paper_idx][:100] + "...",
-                                'source_sentence': source_sentences[source_idx][:100] + "...",
-                                'similarity': max_sim,
-                                'paper_index': i
-                            })
-                except ValueError:
-                    continue
-        
-        # Calculate overall plagiarism score
-        overall_score = np.mean(similarity_scores) * 100 if similarity_scores.size > 0 else 0
-        
-        # Prepare result summary
-        result = {
-            'overall_similarity': round(overall_score, 2),
-            'paper_similarities': [round(score * 100, 2) for score in similarity_scores],
-            'detailed_matches': sorted(detailed_matches, key=lambda x: x['similarity'], reverse=True)[:5],
-            'risk_level': 'High' if overall_score > 70 else 'Medium' if overall_score > 40 else 'Low'
-        }
-        
-        return result
-        
-    except Exception as e:
-        logger.error(f"Error in plagiarism detection: {str(e)}")
-        return {
-            'overall_similarity': 0,
-            'paper_similarities': [],
-            'detailed_matches': [],
-            'risk_level': 'Error',
-            'error': str(e)
-        }
 
 def apply_academic_formatting(text, section_type="general"):
     """Apply academic formatting to text using HTML/CSS styling"""
@@ -1172,15 +1060,7 @@ def index():
             visualizations = generate_visualizations(papers_data)
             research_paper = generate_research_paper(papers_data, custom_title)
 
-            # Add plagiarism detection
-            if research_paper:
-                # Extract text content from the HTML research paper
-                paper_text = re.sub(r'<[^>]+>', '', research_paper)
-                similarity_data = detect_plagiarism(paper_text, papers_data)
-            else:
-                similarity_data = None
-
-            # Store user ID in session
+            # Store user ID in session (much smaller than storing all data)
             if 'user_id' not in session:
                 session['user_id'] = str(uuid.uuid4())
 
@@ -1191,10 +1071,9 @@ def index():
                 flash('Analysis completed but there was an error saving the data.', 'warning')
 
             return render_template('index.html',
-                                papers_data=papers_data,
-                                visualizations=visualizations,
-                                research_paper=research_paper,
-                                similarity_data=similarity_data)
+                                       papers_data=papers_data,
+                                       visualizations=visualizations,
+                                       research_paper=research_paper)
 
         except Exception as e:
             logger.error(f"Error processing request: {str(e)}")
