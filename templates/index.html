@@ -1001,40 +1001,7 @@ transform: translateY(-1px);
 
 
 
-.plagiarism-analysis .progress {
-    height: 20px;
-    border-radius: 10px;
-    margin: 10px 0;
-}
 
-.plagiarism-analysis .progress-bar {
-    transition: width 0.6s ease;
-}
-
-.plagiarism-analysis .card {
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    border-radius: 8px;
-}
-
-.plagiarism-analysis .card-title {
-    color: #333;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-}
-
-.plagiarism-analysis .badge {
-    font-size: 0.9rem;
-    padding: 0.5em 1em;
-}
-
-.plagiarism-analysis .table th {
-    font-weight: 600;
-    background-color: #f8f9fa;
-}
-
-.plagiarism-analysis .table td {
-    vertical-align: middle;
-}
 
 .typing-dot:nth-child(2) {
 animation-delay: 0.2s;
@@ -1698,14 +1665,6 @@ td:hover .copy-btn {
     </li>
     {% endif %}
 
-    {% if papers_data and research_paper %}
-<li class="nav-item" role="presentation">
-  <button class="nav-link" id="plagiarism-tab" data-bs-toggle="tab" data-bs-target="#plagiarism" type="button" role="tab">
-    <i class="fas fa-search-dollar me-2"></i>Plagiarism Check
-  </button>
-</li>
-{% endif %}
-    
     {% if papers_data %}
     <li class="nav-item" role="presentation">
       <button class="nav-link" id="chat-tab" data-bs-toggle="tab" data-bs-target="#chat" type="button" role="tab">
@@ -1827,97 +1786,6 @@ td:hover .copy-btn {
     </div>
     {% endif %}
 
-    {% if papers_data and research_paper %}
-<div class="tab-pane fade" id="plagiarism" role="tabpanel">
-  <div class="plagiarism-analysis">
-    <div class="row">
-      <div class="col-md-4">
-        <div class="card mb-4">
-          <div class="card-body">
-            <h5 class="card-title">Overall Similarity Score</h5>
-            <div class="text-center">
-              <div class="progress" style="height: 25px;">
-                <div class="progress-bar {{ 'bg-danger' if similarity_data.overall_similarity > 70 else 'bg-warning' if similarity_data.overall_similarity > 40 else 'bg-success' }}" 
-                     role="progressbar" 
-                     style="width: {{ similarity_data.overall_similarity }}%"
-                     aria-valuenow="{{ similarity_data.overall_similarity }}" 
-                     aria-valuemin="0" 
-                     aria-valuemax="100">
-                  {{ similarity_data.overall_similarity }}%
-                </div>
-              </div>
-              <p class="mt-3">Risk Level: <span class="badge {{ 'bg-danger' if similarity_data.risk_level == 'High' else 'bg-warning' if similarity_data.risk_level == 'Medium' else 'bg-success' }}">{{ similarity_data.risk_level }}</span></p>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="col-md-8">
-        <div class="card mb-4">
-          <div class="card-body">
-            <h5 class="card-title">Similarity Analysis</h5>
-            <div class="table-responsive">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th>Paper Title</th>
-                    <th>Similarity</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for similarity, paper in zip(similarity_data.paper_similarities, papers_data) %}
-                  <tr>
-                    <td>{{ paper.title }}</td>
-                    <td>
-                      <div class="progress">
-                        <div class="progress-bar {{ 'bg-danger' if similarity > 70 else 'bg-warning' if similarity > 40 else 'bg-success' }}" 
-                             role="progressbar" 
-                             style="width: {{ similarity }}%"
-                             aria-valuenow="{{ similarity }}" 
-                             aria-valuemin="0" 
-                             aria-valuemax="100">
-                          {{ similarity }}%
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">Similar Content Detected</h5>
-        <div class="table-responsive">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Generated Content</th>
-                <th>Similar Source Content</th>
-                <th>Similarity</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for match in similarity_data.detailed_matches %}
-              <tr>
-                <td>{{ match.paper_sentence }}</td>
-                <td>{{ match.source_sentence }}</td>
-                <td>{{ "%.1f"|format(match.similarity * 100) }}%</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-{% endif %}
     <!-- Chat Tab -->
     {% if papers_data %}
     <div class="tab-pane fade" id="chat" role="tabpanel">
