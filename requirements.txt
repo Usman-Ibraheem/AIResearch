@@ -11,3 +11,4 @@ pyngrok
 requests
 numpy
 nltk
+scikit-learn
