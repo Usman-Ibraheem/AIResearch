@@ -3,7 +3,6 @@ import os
 import io
 import re
 import json
-import plotly.graph_objects as go
 from datetime import datetime
 from flask import Flask, request, render_template, jsonify, flash, session
 from pyngrok import ngrok
@@ -26,7 +25,16 @@ import requests
 from urllib.parse import quote_plus
 import xml.etree.ElementTree as ET
 from html import unescape
-
+import wave
+from werkzeug.utils import secure_filename
+import soundfile as sf
+import speech_recognition as sr
+from werkzeug.utils import secure_filename
+import pyttsx3
+from threading import Thread
+import whisper
+from gtts import gTTS
+import threading
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -39,7 +47,8 @@ model = genai.GenerativeModel('gemini-pro')
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Required for session management
 
-
+# Configure ngrok
+ngrok.set_auth_token("2t1cebajDU7KEt0MyKZomaJ95pj_4dGdLiMYSMbBD5MrZjFDA")
 
 # Add this after your existing Flask configuration
 TEMP_DIR = Path(tempfile.gettempdir()) / 'paper_analyzer'
@@ -51,6 +60,38 @@ def before_request():
     if 'user_id' not in session:
         session['user_id'] = str(uuid.uuid4())
     cleanup_old_files()
+
+
+
+
+# Initialize Whisper model
+whisper_model = whisper.load_model("base")
+
+# Add these new routes to your Flask application
+@app.route('/transcribe', methods=['POST'])
+def transcribe_audio():
+    try:
+        if 'audio' not in request.files:
+            return jsonify({'error': 'No audio file provided'}), 400
+
+        audio_file = request.files['audio']
+
+        # Save the audio file temporarily
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as temp_audio:
+            audio_file.save(temp_audio.name)
+
+            # Transcribe using Whisper
+            result = whisper_model.transcribe(temp_audio.name)
+
+            # Clean up temporary file
+            os.unlink(temp_audio.name)
+
+            return jsonify({'text': result['text']})
+
+    except Exception as e:
+        logger.error(f"Error in transcribe_audio: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 
 # Update the save_analysis_data function to ensure proper data serialization
 def save_analysis_data(user_id, papers_data, research_paper):
@@ -164,7 +205,7 @@ def analyze_paper(text):
         """
 
         # Truncate text if too long
-        max_chunk_size = 4000
+        max_chunk_size = 8000
         text_chunk = text[:max_chunk_size]
 
         # Generate response
@@ -266,9 +307,7 @@ def analyze_paper(text):
             "accuracy_metrics": "",
             "keywords": []
         }
-# Clear memory after processing
-    gc.collect()
-    
+
 def generate_section_prompt(section_type, papers_data, custom_title=None, previous_sections=None):
     """Creates specific prompts for different paper sections using analyzed papers data"""
 
@@ -690,42 +729,22 @@ def generate_visualizations(papers_data):
 
         # 1. Publication Trend Over Years
         if 'publication_year' in df.columns and not df['publication_year'].empty:
-            # Clean and validate publication years
-            df['publication_year'] = pd.to_numeric(df['publication_year'], errors='coerce')
-            years_count = df['publication_year'].dropna().value_counts().sort_index()
-            
-            if not years_count.empty:
-                # Convert index to strings to avoid issues with numeric handling
-                years_count.index = years_count.index.astype(str)
-                
-                fig = go.Figure()
-                fig.add_trace(go.Scatter(
-                    x=years_count.index,
-                    y=years_count.values,
-                    mode='lines+markers',
-                    line=dict(color='#1f77b4')
-                ))
-                
-                fig.update_layout(
-                    title='Publications Over Years',
-                    xaxis_title='Year',
-                    yaxis_title='Number of Publications',
-                    showlegend=False
-                )
-                visualizations['pub_trend'] = fig.to_html(full_html=False)
+            years_count = df['publication_year'].value_counts().sort_index()
+            fig = px.line(x=years_count.index, y=years_count.values,
+                         title='Publications Over Years',
+                         labels={'x': 'Year', 'y': 'Number of Publications'})
+            fig.update_traces(line_color='#1f77b4')
+            visualizations['pub_trend'] = fig.to_html()
 
         # 2. Domain Distribution
-        if 'domain' in df.columns and not df['domain'].empty:
-            domain_count = df['domain'].dropna().value_counts()
+        if 'domain' in df.columns and not df['domain'].empty and df['domain'].notna().any():
+            domain_count = df['domain'].value_counts()
             if not domain_count.empty:
-                fig = go.Figure(data=[go.Pie(
-                    labels=domain_count.index,
-                    values=domain_count.values
-                )])
-                fig.update_layout(title='Research Domains Distribution')
-                visualizations['domain_dist'] = fig.to_html(full_html=False)
+                fig = px.pie(values=domain_count.values, names=domain_count.index,
+                           title='Research Domains Distribution')
+                visualizations['domain_dist'] = fig.to_html()
 
-        # 3. Methods Analysis
+        # 3. Methods/Techniques Word Cloud-style Visualization
         if 'methods' in df.columns:
             methods = []
             for paper_methods in df['methods']:
@@ -735,20 +754,21 @@ def generate_visualizations(papers_data):
                     methods.append(paper_methods)
 
             if methods:
-                methods_count = pd.Series(methods).value_counts().head(15)
+                methods_count = pd.Series(methods).value_counts()
                 if not methods_count.empty:
-                    fig = go.Figure(data=[go.Bar(
-                        x=methods_count.index,
-                        y=methods_count.values,
-                        marker_color='#1f77b4'
-                    )])
-                    fig.update_layout(
-                        title='Top 15 Methods Used',
-                        xaxis_title='Method',
-                        yaxis_title='Frequency',
-                        xaxis_tickangle=-45
+                    # Create a proper DataFrame for treemap
+                    treemap_df = pd.DataFrame({
+                        'method': methods_count.index[:15],
+                        'count': methods_count.values[:15],
+                        'parent': ['Methods'] * len(methods_count.index[:15])
+                    })
+                    fig = px.treemap(
+                        treemap_df,
+                        path=['parent', 'method'],
+                        values='count',
+                        title='Top 15 Methods/Techniques Used'
                     )
-                    visualizations['methods_dist'] = fig.to_html(full_html=False)
+                    visualizations['methods_tree'] = fig.to_html()
 
         # 4. Advanced Features Analysis
         if 'advanced_features' in df.columns:
@@ -760,22 +780,30 @@ def generate_visualizations(papers_data):
                     features.append(paper_features)
 
             if features:
-                features_count = pd.Series(features).value_counts().head(10)
+                features_count = pd.Series(features).value_counts()
                 if not features_count.empty:
-                    fig = go.Figure(data=[go.Bar(
-                        x=features_count.index,
-                        y=features_count.values,
-                        marker_color='#2ca02c'
-                    )])
-                    fig.update_layout(
+                    fig = px.bar(
+                        x=features_count.index[:10],
+                        y=features_count.values[:10],
                         title='Top Advanced Features',
-                        xaxis_title='Feature',
-                        yaxis_title='Frequency',
-                        xaxis_tickangle=-45
+                        labels={'x': 'Feature', 'y': 'Frequency'}
                     )
-                    visualizations['features_dist'] = fig.to_html(full_html=False)
+                    visualizations['features_dist'] = fig.to_html()
 
-        # 5. Keywords Distribution
+        # 5. Dataset Usage Analysis
+        if 'dataset_used' in df.columns and df['dataset_used'].notna().any():
+            dataset_count = df['dataset_used'].value_counts()
+            if not dataset_count.empty:
+                fig = px.bar(
+                    x=dataset_count.index[:8],
+                    y=dataset_count.values[:8],
+                    title='Common Datasets Used',
+                    labels={'x': 'Dataset', 'y': 'Frequency'}
+                )
+                fig.update_layout(xaxis_tickangle=-45)
+                visualizations['dataset_dist'] = fig.to_html()
+
+        # 6. Research Focus Evolution (Keywords)
         if 'keywords' in df.columns:
             keywords = []
             for paper_keywords in df['keywords']:
@@ -785,20 +813,22 @@ def generate_visualizations(papers_data):
                     keywords.append(paper_keywords)
 
             if keywords:
-                keywords_count = pd.Series(keywords).value_counts().head(12)
+                keywords_count = pd.Series(keywords).value_counts()
                 if not keywords_count.empty:
-                    fig = go.Figure(data=[go.Bar(
-                        x=keywords_count.index,
-                        y=keywords_count.values,
-                        marker_color='#ff7f0e'
-                    )])
-                    fig.update_layout(
+                    # Create a proper DataFrame for scatter plot
+                    scatter_df = pd.DataFrame({
+                        'keyword': keywords_count.index[:12],
+                        'frequency': keywords_count.values[:12]
+                    })
+                    fig = px.scatter(
+                        scatter_df,
+                        x='keyword',
+                        y='frequency',
+                        size='frequency',
                         title='Research Keywords Distribution',
-                        xaxis_title='Keyword',
-                        yaxis_title='Frequency',
-                        xaxis_tickangle=-45
+                        labels={'keyword': 'Keyword', 'frequency': 'Frequency'}
                     )
-                    visualizations['keywords_dist'] = fig.to_html(full_html=False)
+                    visualizations['keywords_dist'] = fig.to_html()
 
         return visualizations
 
@@ -1175,7 +1205,8 @@ def generate_chat_response(user_message, papers_data, research_paper):
         logger.error(f"Error generating chat response: {str(e)}")
         error_message = "Maaf, terdapat ralat semasa memproses soalan anda. Sila cuba lagi." if language == 'ms' else "I apologize, but I encountered an error processing your question. Please try again."
         return format_chat_response(error_message)
-        
+
+ 
 
 if __name__ == '__main__':
   app.run(port=10000)
