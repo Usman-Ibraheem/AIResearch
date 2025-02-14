@@ -9,3 +9,8 @@ python-docx
 plotly
 pyngrok
 requests
+soundfile
+SpeechRecognition
+pyttsx3
+openai-whisper
+gTTS
