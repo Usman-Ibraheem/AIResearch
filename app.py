@@ -5,7 +5,6 @@ import re
 import json
 from datetime import datetime
 from flask import Flask, request, render_template, jsonify, flash, session
-from pyngrok import ngrok
 import google.generativeai as genai
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -47,8 +46,6 @@ model = genai.GenerativeModel('gemini-pro')
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Required for session management
 
-# Configure ngrok
-ngrok.set_auth_token("2t1cebajDU7KEt0MyKZomaJ95pj_4dGdLiMYSMbBD5MrZjFDA")
 
 # Add this after your existing Flask configuration
 TEMP_DIR = Path(tempfile.gettempdir()) / 'paper_analyzer'
