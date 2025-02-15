@@ -34,6 +34,7 @@ from threading import Thread
 from gtts import gTTS
 import threading
 import openai
+from openai import OpenAI
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -46,8 +47,13 @@ model = genai.GenerativeModel('gemini-pro')
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Required for session management
 
-# Configure ngrok
-ngrok.set_auth_token("2t1cebajDU7KEt0MyKZomaJ95pj_4dGdLiMYSMbBD5MrZjFDA")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+if OPENAI_API_KEY is None:
+    raise ValueError("Missing OpenAI API key. Set it as an environment variable.")
+
+client = OpenAI(api_key=OPENAI_API_KEY)
+    
 
 # Add this after your existing Flask configuration
 TEMP_DIR = Path(tempfile.gettempdir()) / 'paper_analyzer'
@@ -64,8 +70,6 @@ def before_request():
 
 
 
-# Configure OpenAI API
-openai.api_key = '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'  # Replace with your API key
 
 @app.route('/transcribe', methods=['POST'])
 def transcribe_audio():
