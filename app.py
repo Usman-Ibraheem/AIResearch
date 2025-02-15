@@ -51,7 +51,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if OPENAI_API_KEY is None:
     raise ValueError("Missing OpenAI API key. Set it as an environment variable.")
 
-client = openai.Client(api_key=OPENAI_API_KEY)
+openai.api_key = OPENAI_API_KEY
     
 
 # Add this after your existing Flask configuration
