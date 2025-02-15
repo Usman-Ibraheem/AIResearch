@@ -5,6 +5,7 @@ import re
 import json
 from datetime import datetime
 from flask import Flask, request, render_template, jsonify, flash, session
+from pyngrok import ngrok
 import google.generativeai as genai
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -26,14 +27,13 @@ import xml.etree.ElementTree as ET
 from html import unescape
 import wave
 from werkzeug.utils import secure_filename
-import soundfile as sf
 import speech_recognition as sr
 from werkzeug.utils import secure_filename
 import pyttsx3
 from threading import Thread
-import whisper
 from gtts import gTTS
 import threading
+import openai
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -46,6 +46,8 @@ model = genai.GenerativeModel('gemini-pro')
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Required for session management
 
+# Configure ngrok
+ngrok.set_auth_token("2t1cebajDU7KEt0MyKZomaJ95pj_4dGdLiMYSMbBD5MrZjFDA")
 
 # Add this after your existing Flask configuration
 TEMP_DIR = Path(tempfile.gettempdir()) / 'paper_analyzer'
@@ -61,10 +63,10 @@ def before_request():
 
 
 
-# Initialize Whisper model
-whisper_model = whisper.load_model("base")
 
-# Add these new routes to your Flask application
+# Configure OpenAI API
+openai.api_key = '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'  # Replace with your API key
+
 @app.route('/transcribe', methods=['POST'])
 def transcribe_audio():
     try:
@@ -77,14 +79,18 @@ def transcribe_audio():
         with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as temp_audio:
             audio_file.save(temp_audio.name)
 
-            # Transcribe using Whisper
-            result = whisper_model.transcribe(temp_audio.name)
+            # Open the saved audio file and send to OpenAI API
+            with open(temp_audio.name, 'rb') as audio:
+                transcript = openai.Audio.transcribe(
+                    model="whisper-1",
+                    file=audio,
+                    response_format="text"
+                )
 
-            # Clean up temporary file
-            os.unlink(temp_audio.name)
+        # Clean up temporary file
+        os.unlink(temp_audio.name)
 
-            return jsonify({'text': result['text']})
-
+        return jsonify({'text': transcript})
     except Exception as e:
         logger.error(f"Error in transcribe_audio: {str(e)}")
         return jsonify({'error': str(e)}), 500
@@ -1203,7 +1209,7 @@ def generate_chat_response(user_message, papers_data, research_paper):
         error_message = "Maaf, terdapat ralat semasa memproses soalan anda. Sila cuba lagi." if language == 'ms' else "I apologize, but I encountered an error processing your question. Please try again."
         return format_chat_response(error_message)
 
- 
+
 
 if __name__ == '__main__':
   app.run(port=10000)
