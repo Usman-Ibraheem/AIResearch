@@ -34,7 +34,6 @@ from threading import Thread
 from gtts import gTTS
 import threading
 import openai
-from openai import OpenAI
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
