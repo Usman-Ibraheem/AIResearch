@@ -12,3 +12,4 @@ SpeechRecognition
 pyttsx3
 openai==0.28
 gTTS
+pyngrok
