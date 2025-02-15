@@ -7,10 +7,8 @@ seaborn
 PyPDF2
 python-docx
 plotly
-pyngrok
 requests
-soundfile
 SpeechRecognition
 pyttsx3
-openai-whisper
+openai==0.28
 gTTS
