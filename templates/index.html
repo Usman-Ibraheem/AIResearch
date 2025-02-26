@@ -24,6 +24,17 @@
   --error-color: #EF4444;
 }
 
+    /* New style for zooming out on mobile */
+  @media only screen and (max-width: 767px) {
+    body {
+      transform: scale(0.85);
+      transform-origin: top left;
+      width: 117.65%; /* 100 / 0.85 */
+      height: 117.65%; /* 100 / 0.85 */
+      overflow-x: hidden;
+    }
+  }
+  
 .language-btn.active {
   background-color: #0d6efd;
   color: white;
