@@ -40,7 +40,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 # Configure Google Generative AI
-genai.configure(api_key='AIzaSyCobtRktUtNPkAvh3H1PZGl9sPV276WMoA')
+genai.configure(api_key='AIzaSyApiL1FanxZ1ioiM627nXypu1m6lgOvikc')
 model = genai.GenerativeModel('gemini-pro')
 
 app = Flask(__name__)
