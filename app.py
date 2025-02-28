@@ -34,6 +34,7 @@ from threading import Thread
 from gtts import gTTS
 import threading
 import openai
+from dotenv import load_dotenv
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
