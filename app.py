@@ -39,8 +39,13 @@ import openai
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# Configure Google Generative AI
-genai.configure(api_key='AIzaSyBm4ul21blxGelGLc7npjUYvjgI6hxTkZQ')
+# Configure Google Generative AI using an environment variable
+api_key = os.getenv('GEMINI_API_KEY')
+
+if not api_key:
+    raise ValueError("GEMINI_API_KEY environment variable is not set.")
+
+genai.configure(api_key=api_key)
 model = genai.GenerativeModel('gemini-pro')
 
 app = Flask(__name__)
